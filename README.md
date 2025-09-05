@@ -10,16 +10,13 @@ Repositori ini berisi implementasi Data Warehouse dari awal (from scratch) berba
 # Data Architecture
 Arsitektur data dalam proyek ini terinspirasi dari Medallion Architecture (Bronze, Silver, Gold layers) dengan beberapa tambahan layer yang disesuaikan dengan kebutuhan, sehingga alurnya menjadi lebih terstruktur:
 <img width="1374" height="500" alt="image" src="https://github.com/user-attachments/assets/62caf40f-e964-481d-b439-fa5202e1bea1" />
-
-Stagging 
+ 
   1. Extract Layer   (Bronze):
        - Menyimpan data mentah dari sistem sumber.
        - Data diserap dari berkas CSV ke dalam basis data Postgres SQL.
   2. Transfrom Layer (Silver):
        - Lapisan ini mencakup proses pembersihan, standarisasi, dan normalisasi data untuk menyiapkan data untuk analisis
        - Menyiapkan data agar lebih konsisten dan siap digunakan untuk analisis.
-Warehousing
-
   3.Data Modeling Layer (Gold):
       - Lapisan ini mencakup proses  data model logis dan data model fisik
       - Menerapkan schema untuk mendukung kebutuhan analitik.
