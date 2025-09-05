@@ -18,8 +18,8 @@ Stagging
   2. Transfrom Layer (Silver):
        - Lapisan ini mencakup proses pembersihan, standarisasi, dan normalisasi data untuk menyiapkan data untuk analisis
        - Menyiapkan data agar lebih konsisten dan siap digunakan untuk analisis.
-       -   
 Warehousing
+
   3.Data Modeling Layer (Gold):
       - Lapisan ini mencakup proses  data model logis dan data model fisik
       - Menerapkan schema untuk mendukung kebutuhan analitik.
