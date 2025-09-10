@@ -21,7 +21,8 @@ LANGUAGE plpgsql;
 create role de_owner with 
 	login 
 	password  'de_owner'
-
+-- Membuat role owner menjadi superuser supaya bisa access banyak hal
+ALTER ROLE de_owner WITH SUPERUSER;
 -- Membuat database dengan owner de_owner -- 
 create database datawarehouse with
 owner ='de_owner'
