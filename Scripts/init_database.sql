@@ -27,17 +27,13 @@ create database datawarehouse with
 owner ='de_owner'
 
 -- Noted dilakukan query pada database datawarehouse dengan login menggunakan role de_owner --
-
--- Membuat shcema untuk proses etl di stagging area dengan format (stg_namalayer)  dan warehouse dengan format (wh_namalayer)--
 -- schema extract -- 
-create schema stg_extract 
+create schema bronze 
 
 -- schema transfrom -- 
-create schema stg_transfrom  
+create schema silver  
 
 -- schema modeling -- 
-create schema wh_modeling 
+create schema gold 
 
--- schema security -- 
-create schema wh_security 
 
