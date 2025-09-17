@@ -1,4 +1,4 @@
-REATE TABLE or replace bronze.crm_cust_info (
+CREATE TABLE or replace bronze.crm_cust_info (
     cst_id              INT,
     cst_key             VARCHAR(50),
     cst_firstname       VARCHAR(50),
