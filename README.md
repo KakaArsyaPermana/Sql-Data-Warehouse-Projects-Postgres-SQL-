@@ -8,8 +8,9 @@ Repositori ini berisi implementasi Data Warehouse dari awal (from scratch) berba
   3. Data Security → manajemen role, akses user, dan pembuatan data mart berbasis views.
 
 # Data Architecture
-Arsitektur data dalam proyek ini terinspirasi dari Medallion Architecture (Bronze, Silver, Gold layers) dengan beberapa tambahan layer yang disesuaikan dengan kebutuhan, sehingga alurnya menjadi lebih terstruktur:
-<img width="1374" height="500" alt="image" src="https://github.com/user-attachments/assets/62caf40f-e964-481d-b439-fa5202e1bea1" />
+Arsitektur data dalam proyek ini terinspirasi dari Medallion Architecture (Bronze, Silver, Gold) Layers dengan tambahan PLatinum layer yang disesuaikan dengan kebutuhan, sehingga alurnya menjadi lebih terstruktur:
+<img width="1618" height="751" alt="image" src="https://github.com/user-attachments/assets/cbe34719-925a-483a-bf21-3ba5354eb504" />
+
  
   1. Extract Layer   (Bronze):
        - Menyimpan data mentah dari sistem sumber.
