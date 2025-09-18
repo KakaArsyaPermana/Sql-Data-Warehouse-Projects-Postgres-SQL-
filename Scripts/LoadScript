@@ -1,26 +1,29 @@
---Jika menggunakan pg admin jang simpan data di c:user karena jika disimpan disana maka harus jalankan sintaks 
-\copy di sql shell(psql) --
-contoh 
+# noted
+         Jika file CSV disimpan di dalam folder C:\Users\..., maka harus menggunakan \copy di SQL Shell (psql), bukan di Query Tool pgAdmin.
+         Jika file CSV disimpan di luar C:\Users\... (misalnya di D:\ atau folder lain), bisa langsung menggunakan COPY di Query Tool pgAdmin.
+
+## 1. Import CSV dengan \copy (jalankan di SQL Shell psql)
+
+-- Login ke database
 Database [postgres]: datawarehouse
 Port [5432]:
 Username [postgres]: de_owner
 Password for user de_owner:
-psql (17.3)
-WARNING: Console code page (437) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-Type "help" for help.
 
-datawarehouse=# \copy bronze.crm_cust_info FROM 'C:/Users/User/Documents/Projects/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',');
---
-
--- jika diluar c:user jalan kan di quer tools --
--- ini di jalankan di query tools -- 
-
-copy bronze.crm_cust_info 
-FROM 'D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_crm\cust_info.csv' 
+-- Perintah \copy
+\copy bronze.crm_cust_info 
+FROM 'C:/Users/User/Documents/Projects/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv' 
 WITH (
-FORMAT csv, 
-HEADER true, 
-DELIMITER ','
+    FORMAT csv, 
+    HEADER true, 
+    DELIMITER ','
+);
+
+## 2. Import CSV dengan COPY (jalankan di Query Tool pgAdmin)
+COPY bronze.crm_cust_info 
+FROM 'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv' 
+WITH (
+    FORMAT csv, 
+    HEADER true, 
+    DELIMITER ','
 );
