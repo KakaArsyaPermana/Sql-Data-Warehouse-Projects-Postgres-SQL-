@@ -1,89 +1,81 @@
-# noted
-         Jika file CSV disimpan di dalam folder C:\Users\..., maka harus menggunakan \copy di SQL Shell (psql), bukan di Query Tool pgAdmin.
-         Jika file CSV disimpan di luar C:\Users\... (misalnya di D:\ atau folder lain), bisa langsung menggunakan COPY di Query Tool pgAdmin.
+-- =========================================================
+--  Load Script Bronze Layer
+--  Note:
+--    - Jika file CSV ada di C:\Users\..., gunakan \copy di psql
+--    - Jika file CSV ada di D:\ atau folder lain, gunakan COPY di Query Tool pgAdmin
+-- =========================================================
 
-1. Import CSV dengan \copy (jalankan di SQL Shell psql)
 
--- Login ke database
-Database [postgres]: datawarehouse
-Port [5432]:
-Username [postgres]: de_owner
-Password for user de_owner:
+-- =========================================================
+-- 1. Import CSV dengan \copy (SQL Shell psql)
+-- =========================================================
+-- Contoh:
+-- \copy bronze.crm_cust_info 
+-- FROM 'C:/Users/User/Documents/Projects/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv' 
+-- WITH (
+--     FORMAT csv, 
+--     HEADER true, 
+--     DELIMITER ','
+-- );
 
--- Perintah \copy
-\copy bronze.crm_cust_info 
-FROM 'C:/Users/User/Documents/Projects/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv' 
-WITH (
-    FORMAT csv, 
-    HEADER true, 
-    DELIMITER ','
-);
 
-2. Import CSV dengan COPY (jalankan di Query Tool pgAdmin)
-COPY bronze.crm_cust_info 
-FROM 'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv' 
-WITH (
-    FORMAT csv, 
-    HEADER true, 
-    DELIMITER ','
-);
+-- =========================================================
+-- 2. Import CSV dengan COPY (Query Tool pgAdmin)
+-- =========================================================
+-- Contoh:
+-- COPY bronze.crm_cust_info 
+-- FROM 'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv' 
+-- WITH (
+--     FORMAT csv, 
+--     HEADER true, 
+--     DELIMITER ','
+-- );
 
-# Load Data Bronze (Extract Layer)
 
-## Membuat Procedure untuk Extract dari CSV (CRM, ORP)
-
-**Tujuan:**
-1. **Usability** → mudah digunakan secara berulang.  
-2. **Data Integrity** → memastikan bahwa data sesuai dengan isi dan barisnya.  
-3. **No Duplication** → mencegah duplikasi data.  
-   > Jika query `COPY` dieksekusi lebih dari 1 kali pada file yang sama, maka data bisa terduplikat.
-
--- store procedure dengan nama bronze.cek_data 
-cara menjalakan dengan call ('(nt),(sp)')
-nt = nama_table
-sp = sourcepath (contoh 'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv')
---
+-- =========================================================
+-- 3. Stored Procedure untuk Load Data Bronze
+-- =========================================================
 create or replace procedure bronze.cek_data(
-nt varchar,
-sp varchar
+    nt varchar,   -- nama tabel
+    sp varchar    -- path file CSV
 )
 language plpgsql
 as $$
 declare
-	count_row int;
-	count_tb int ;
+    count_row int;
+    count_tb int;
 begin 
-	execute format('select count(*) from bronze.%I',nt) into count_row;
+    -- cek apakah tabel sudah ada isinya
+    execute format('select count(*) from bronze.%I', nt) into count_row;
 
-	if count_row > 0 then
-		raise notice 'Tabel ini sudah terisi %',nt;
-	else
-		execute format(
-			'copy bronze.%I 
-			from %L
-			with (Format csv,header true,delimiter ",")',nt,sp
-		);
-		execute format('select count(*) from bronze.%I',nt) into count_tb;
-		raise notice 'Tabel sudah di insert dengan nama  % dan total baris %',nt,count_tb;
-	end if;
+    if count_row > 0 then
+        raise notice 'Tabel % sudah terisi', nt;
+    else
+        -- load data dengan COPY
+        execute format(
+            'copy bronze.%I 
+             from %L
+             with (Format csv, header true, delimiter ",")', nt, sp
+        );
+
+        -- cek jumlah data setelah insert
+        execute format('select count(*) from bronze.%I', nt) into count_tb;
+        raise notice 'Tabel % berhasil diinsert dengan total baris %', nt, count_tb;
+    end if;
 end;
 $$;
 
- -- data crm_cust_info --
-call bronze.cek_data('crm_cust_info','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_crm\cust_info.csv')
 
--- data crm_prd_info -- 
-call bronze.cek_data('crm_prd_info','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_crm\prd_info.csv')
+-- =========================================================
+-- 4. Contoh Pemanggilan Procedure
+-- =========================================================
 
--- data crm_sales_details --
-call bronze.cek_data('crm_sales_details','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_crm\sales_details.csv')
+-- Data CRM
+call bronze.cek_data('crm_cust_info',     'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv');
+call bronze.cek_data('crm_prd_info',      'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/prd_info.csv');
+call bronze.cek_data('crm_sales_details', 'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/sales_details.csv');
 
--- data erp_cust_az12 --
-call bronze.cek_data('erp_cust_az12','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_erp\CUST_AZ12.csv')
-
--- data erp_loc_a101 --
-call bronze.cek_data('erp_loc_a101','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_erp\LOC_A101.csv')
-
--- erp_ox_cat_g1v2 -- 
-call bronze.cek_data('erp_px_cat_g1v2','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_erp\PX_CAT_G1V2.csv')
-
+-- Data ERP
+call bronze.cek_data('erp_cust_az12',     'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_erp/CUST_AZ12.csv');
+call bronze.cek_data('erp_loc_a101',      'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_erp/LOC_A101.csv');
+call bronze.cek_data('erp_px_cat_g1v2',   'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_erp/PX_CAT_G1V2.csv');
