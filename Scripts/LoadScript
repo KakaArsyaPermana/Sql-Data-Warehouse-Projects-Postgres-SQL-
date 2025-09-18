@@ -2,7 +2,7 @@
          Jika file CSV disimpan di dalam folder C:\Users\..., maka harus menggunakan \copy di SQL Shell (psql), bukan di Query Tool pgAdmin.
          Jika file CSV disimpan di luar C:\Users\... (misalnya di D:\ atau folder lain), bisa langsung menggunakan COPY di Query Tool pgAdmin.
 
-## 1. Import CSV dengan \copy (jalankan di SQL Shell psql)
+1. Import CSV dengan \copy (jalankan di SQL Shell psql)
 
 -- Login ke database
 Database [postgres]: datawarehouse
@@ -19,7 +19,7 @@ WITH (
     DELIMITER ','
 );
 
-## 2. Import CSV dengan COPY (jalankan di Query Tool pgAdmin)
+2. Import CSV dengan COPY (jalankan di Query Tool pgAdmin)
 COPY bronze.crm_cust_info 
 FROM 'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv' 
 WITH (
@@ -27,3 +27,63 @@ WITH (
     HEADER true, 
     DELIMITER ','
 );
+
+# Load Data Bronze (Extract Layer)
+
+## Membuat Procedure untuk Extract dari CSV (CRM, ORP)
+
+**Tujuan:**
+1. **Usability** → mudah digunakan secara berulang.  
+2. **Data Integrity** → memastikan bahwa data sesuai dengan isi dan barisnya.  
+3. **No Duplication** → mencegah duplikasi data.  
+   > Jika query `COPY` dieksekusi lebih dari 1 kali pada file yang sama, maka data bisa terduplikat.
+
+-- store procedure dengan nama bronze.cek_data 
+cara menjalakan dengan call ('(nt),(sp)')
+nt = nama_table
+sp = sourcepath (contoh 'D:/Project/0.Data Warehouse Postgres Sql/DataSet/source_crm/cust_info.csv')
+--
+create or replace procedure bronze.cek_data(
+nt varchar,
+sp varchar
+)
+language plpgsql
+as $$
+declare
+	count_row int;
+	count_tb int ;
+begin 
+	execute format('select count(*) from bronze.%I',nt) into count_row;
+
+	if count_row > 0 then
+		raise notice 'Tabel ini sudah terisi %',nt;
+	else
+		execute format(
+			'copy bronze.%I 
+			from %L
+			with (Format csv,header true,delimiter ",")',nt,sp
+		);
+		execute format('select count(*) from bronze.%I',nt) into count_tb;
+		raise notice 'Tabel sudah di insert dengan nama  % dan total baris %',nt,count_tb;
+	end if;
+end;
+$$;
+
+ -- data crm_cust_info --
+call bronze.cek_data('crm_cust_info','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_crm\cust_info.csv')
+
+-- data crm_prd_info -- 
+call bronze.cek_data('crm_prd_info','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_crm\prd_info.csv')
+
+-- data crm_sales_details --
+call bronze.cek_data('crm_sales_details','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_crm\sales_details.csv')
+
+-- data erp_cust_az12 --
+call bronze.cek_data('erp_cust_az12','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_erp\CUST_AZ12.csv')
+
+-- data erp_loc_a101 --
+call bronze.cek_data('erp_loc_a101','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_erp\LOC_A101.csv')
+
+-- erp_ox_cat_g1v2 -- 
+call bronze.cek_data('erp_px_cat_g1v2','D:\Project\0.Data Warehouse Postgres Sql\DataSet\source_erp\PX_CAT_G1V2.csv')
+
