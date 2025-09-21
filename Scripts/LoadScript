@@ -35,34 +35,54 @@
 -- =========================================================
 -- 3. Stored Procedure untuk Load Data Bronze
 -- =========================================================
-create or replace procedure bronze.cek_data(
+CREATE OR REPLACE PROCEDURE bronze.cek_data(
     nt varchar,   -- nama tabel
     sp varchar    -- path file CSV
 )
-language plpgsql
-as $$
-declare
+LANGUAGE plpgsql
+AS $$
+DECLARE
     count_row int;
     count_tb int;
-begin 
-    -- cek apakah tabel sudah ada isinya
-    execute format('select count(*) from bronze.%I', nt) into count_row;
-
-    if count_row > 0 then
-        raise notice 'Tabel % sudah terisi', nt;
-    else
-        -- load data dengan COPY
-        execute format(
-            'copy bronze.%I 
-             from %L
-             with (Format csv, header true, delimiter ",")', nt, sp
+    start_time timestamp;
+    end_time timestamp;
+BEGIN
+    -- Catat waktu mulai
+    start_time := clock_timestamp();
+	BEGIN -- BEGIN untuk error handling table
+    -- Cek apakah tabel sudah ada isinya
+    EXECUTE format('SELECT count(*) FROM bronze.%I', nt) INTO count_row;
+	exception
+		WHEN undefined_table THEN
+      		RAISE NOTICE 'Tabel bronze.% tidak ditemukan', nt;
+     		RETURN;
+  	END;
+	  
+    IF count_row > 0 THEN
+        RAISE NOTICE 'Tabel % sudah terisi', nt;
+    ELSE
+	BEGIN -- eror handling proses insert --
+        -- Load data dengan COPY
+        EXECUTE format(
+            'COPY bronze.%I 
+             FROM %L
+             WITH (FORMAT csv, HEADER true, DELIMITER '','')', nt, sp
         );
 
-        -- cek jumlah data setelah insert
-        execute format('select count(*) from bronze.%I', nt) into count_tb;
-        raise notice 'Tabel % berhasil diinsert dengan total baris %', nt, count_tb;
-    end if;
-end;
+        -- Cek jumlah data setelah insert
+        EXECUTE format('SELECT count(*) FROM bronze.%I', nt) INTO count_tb;
+        RAISE NOTICE 'Tabel % berhasil diinsert dengan total baris %', nt, count_tb;
+		exception
+		WHEN others  THEN
+			RAISE NOTICE 'Terjadi error saat proses: %', SQLERRM;
+      END;
+        -- Catat waktu selesai
+        end_time := clock_timestamp();
+
+        -- Hitung durasi
+        RAISE NOTICE 'Durasi proses: %', age(end_time, start_time);
+    END IF;
+END;
 $$;
 
 
