@@ -36,55 +36,72 @@
 -- 3. Stored Procedure untuk Load Data Bronze
 -- =========================================================
 CREATE OR REPLACE PROCEDURE bronze.cek_data(
-    nt varchar,   -- nama tabel
-    sp varchar    -- path file CSV
+    nt VARCHAR,   -- nama tabel
+    sp VARCHAR    -- path file CSV
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    count_row int;
-    count_tb int;
-    start_time timestamp;
-    end_time timestamp;
+    count_row   INT;
+    count_tb    INT;
+    start_time  TIMESTAMP;
+    end_time    TIMESTAMP;
+    time_proces INTERVAL;
 BEGIN
     -- Catat waktu mulai
     start_time := clock_timestamp();
-	BEGIN -- BEGIN untuk error handling table
-    -- Cek apakah tabel sudah ada isinya
-    EXECUTE format('SELECT count(*) FROM bronze.%I', nt) INTO count_row;
-	exception
-		WHEN undefined_table THEN
-      		RAISE NOTICE 'Tabel bronze.% tidak ditemukan', nt;
-     		RETURN;
-  	END;
-	  
+
+    -- BEGIN untuk error handling table
+    BEGIN
+        -- Cek apakah tabel sudah ada isinya
+        EXECUTE format('SELECT count(*) FROM bronze.%I', nt) INTO count_row;
+    EXCEPTION
+        WHEN undefined_table THEN
+            RAISE NOTICE 'Tabel bronze.% tidak ditemukan', nt;
+            RETURN;
+    END;
+
     IF count_row > 0 THEN
         RAISE NOTICE 'Tabel % sudah terisi', nt;
     ELSE
-	BEGIN -- eror handling proses insert --
-        -- Load data dengan COPY
-        EXECUTE format(
-            'COPY bronze.%I 
-             FROM %L
-             WITH (FORMAT csv, HEADER true, DELIMITER '','')', nt, sp
-        );
+        -- Error handling proses insert
+        BEGIN
+            -- Load data dengan COPY
+            EXECUTE format(
+                'COPY bronze.%I 
+                 FROM %L
+                 WITH (FORMAT csv, HEADER true, DELIMITER '','')',
+                nt, sp
+            );
 
-        -- Cek jumlah data setelah insert
-        EXECUTE format('SELECT count(*) FROM bronze.%I', nt) INTO count_tb;
-        RAISE NOTICE 'Tabel % berhasil diinsert dengan total baris %', nt, count_tb;
-		exception
-		WHEN others  THEN
-			RAISE NOTICE 'Terjadi error saat proses: %', SQLERRM;
-      END;
+            -- Cek jumlah data setelah insert
+            EXECUTE format('SELECT count(*) FROM bronze.%I', nt) INTO count_tb;
+            RAISE NOTICE 'Tabel % berhasil diinsert dengan total baris %', nt, count_tb;
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE NOTICE 'Terjadi error saat proses: %', SQLERRM;
+        END;
+
         -- Catat waktu selesai
         end_time := clock_timestamp();
 
         -- Hitung durasi
-        RAISE NOTICE 'Durasi proses: %', age(end_time, start_time);
+        time_proces := age(end_time, start_time);
+        RAISE NOTICE 'Durasi proses: %', time_proces;
+
+        -- Masukkan log ke dalam tabel bronze.etl_log
+        BEGIN
+            INSERT INTO bronze.etl_log (table_name, source, total_row, time_proces)
+            VALUES (nt, sp, count_tb, time_proces);
+
+            RAISE NOTICE 'Log ETL untuk tabel % telah dicatat di bronze.etl_log', nt;
+        EXCEPTION
+            WHEN undefined_table THEN 
+                RAISE NOTICE 'Tabel etl_log tidak ada';
+        END;
     END IF;
 END;
 $$;
-
 
 -- =========================================================
 -- 4. Execute Store Procedure Procedure
