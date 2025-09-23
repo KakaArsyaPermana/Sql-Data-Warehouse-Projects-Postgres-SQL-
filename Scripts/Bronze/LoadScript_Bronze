@@ -1,6 +1,32 @@
--- =========================================================
---  Load Script Bronze Layer
---  Note:
+/* ===============================================================
+   LoadScript : Bronze Table 
+   ================================================================ 
+    Tujuan Skrip :
+        adalah untuk membuat stored procedure untuk memasukan data 
+    kedalam 'bronze' schema dari external csv files 
+    
+    penjelasan alur dan aksi yang di lakukan di store procedure
+    1.    Memvalidasi isi table yang sudah di buat apakah tabel tersebut 
+      sudah diisi atau belum  ,jika sudah maka cek isinya , jika belum di 
+      load datanya 
+    2.    Catat waktu load data
+    3.    Memasukan hasil load data ke dalam log dengan isi
+        nama tabel , source , total_baris , proces extract , 
+        date proses
+
+    Parameter :
+    1.Nama_Table
+    2.Source
+
+    Cara mengeksekusi :
+    call bronze.cek_data('Nama_table','Source'); 
+
+    Noted:
+        Semua ini dilakukan dengan GUI Postgres sql pg_admin 
+    dan datanya di simpan diluar folder c 
+    =============================================================== 
+-- ===============================================================
+--  Noted:
 --    - Jika file CSV ada di C:\Users\..., gunakan \copy di psql
 --    - Jika file CSV ada di D:\ atau folder lain, gunakan COPY di Query Tool pgAdmin
 -- =========================================================
