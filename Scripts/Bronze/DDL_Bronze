@@ -1,10 +1,12 @@
-*/ Membuat tabel sesuai dengan data (crm,erp dan lain lain)  dengan mengecek validasi nama tabel jika dia tidak ada maka di buat jika tidak gunakan yang sudah ada */
-
-/* ==========================================================
-   Membuat schema & tabel di layer Bronze
-   Validasi: jika schema/tabel belum ada maka dibuat,
-   jika sudah ada maka digunakan kembali.
-   ========================================================== */
+/* ===============================================================
+   DDL Script : Bronze Table 
+   =============================================================== 
+   Tujuan Script :
+      Skrip ini bertujuan untuk Membuat schema & tabel di 'Bronze'
+   layer dengan memvalidasi jika schema/tabel belum ada maka dibuat,
+   jika sudah ada maka digunakan kembali dan Membuat tabel 
+   sesuai dengan data (crm,erp dan lain lain) 
+   =============================================================== */
 
 -- Buat schema bronze jika belum ada
 CREATE SCHEMA IF NOT EXISTS bronze;
