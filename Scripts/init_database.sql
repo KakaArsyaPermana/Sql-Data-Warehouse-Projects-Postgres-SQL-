@@ -37,4 +37,5 @@ create schema silver
 -- schema modeling -- 
 create schema gold 
 
-
+-- schema mart & security --
+create schema platinum
