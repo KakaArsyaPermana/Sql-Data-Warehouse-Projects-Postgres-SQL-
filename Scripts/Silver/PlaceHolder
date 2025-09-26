@@ -1,7 +1,6 @@
 -- ==============================================================
--- EKPLORASI DATA
--- ==============================================================
 -- crm_cust_info
+-- ==============================================================
 -- Normalisasi dan validasi primary key
 -- ==============================================================
 -- Cek duplikasi pada primary key
@@ -58,6 +57,65 @@ Transform_2 AS (
 -- ==============================================================
 -- OUTPUT DATA Hasil Transformasi 
 -- ==============================================================
+
+-- ==============================================================
+-- erp_cust_az12
+-- ==============================================================
 SELECT * 
 FROM Transform_2
+
+-- mengeecek missing value -- 
+select * from bronze."erp_cust_az12"
+where cid is null
+
+select * from bronze."erp_cust_az12"
+where bdate is null
+
+select * from bronze."erp_cust_az12"
+where gen is null
+
+-- standarisasi column customer id erp supaya sama ke crm --
+select substring(cid from 1 for length(cid)) as cid,bdate,gen from bronze."erp_cust_az12"
+
+-- ==============================================================
+-- erp_loc_a101
+-- ==============================================================
+
+-- mengeecek missing value -- 
+select * from bronze."erp_loc_a101"
+where cntry is null
+
+select * from bronze."erp_loc_a101"
+where cid is null
+
+-- mengcek duplikat
+select count(*) from bronze."erp_loc_a101"
+group by cntry,cid
+having count(*) > 1 
+
+
+-- standarisasi column customer id erp supaya sama ke crm --
+select concat(substring(cid from 1 for 2) , substring(cid from 4 for length(cid))) as cid,cntry from bronze."erp_loc_a101"
+
+
+-- ==============================================================
+-- crm_prd_info
+-- ==============================================================
+--standarisasi--
+select 
+substring(prd_key from 7 for length(prd_key)) as sls_prd_key,
+prd_id,
+prd_key,
+substring(prd_key from 1 for 5) as prd_cat_key,
+prd_cost,
+case 
+when lower(trim(prd_line)) = 'r' then 'Road'
+when lower(trim(prd_line)) = 'm' then 'Mountain'
+when lower(trim(prd_line)) = 't' then 'Touring'
+when lower(trim(prd_line)) = 's' then 'Sales'
+else 'Other'
+end as prd_line,
+prd_start_dt,
+prd_end_dt
+from bronze."crm_prd_info"
 
