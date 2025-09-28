@@ -151,3 +151,47 @@ select id,cat,subcat,maintenance from bronze."erp_px_cat_g1v2"
 -- ==============================================================
 -- crm_sales_details
 -- ==============================================================
+select * from bronze.etl_log
+
+select * from (
+select *,length(sls_order_dt::varchar)  a from bronze."crm_sales_details"
+)
+where a = 1
+
+-- order_dt 
+select count(*) ,a,sls_order_dt from (
+select length(sls_order_dt::varchar) a , sls_order_dt from bronze."crm_sales_details"
+)
+group by a,sls_order_dt
+
+
+select count(*) ,a from (
+select length(sls_order_dt::varchar) a , sls_order_dt from bronze."crm_sales_details"
+)
+group by a
+
+-- ship_date
+select count(*) ,a from (
+select length(sls_ship_dt::varchar) a , sls_ship_dt from bronze."crm_sales_details"
+)
+group by a
+
+select count(*) ,a,sls_ship_dt from (
+select length(sls_ship_dt::varchar) a , sls_ship_dt from bronze."crm_sales_details"
+)
+group by a,sls_ship_dt
+
+-- sls_due_dt -- 
+select count(*) ,a from (
+select length(sls_due_dt::varchar) a , sls_due_dt from bronze."crm_sales_details"
+)
+group by a
+
+select 
+concat(substring(sls_ship_dt::varchar from 1 for 4 ) , '-', substring(sls_ship_dt::varchar from 5 for 2) , '-',substring(sls_ship_dt::varchar from 7 for 2))::date 
+from bronze."crm_sales_details"
+
+SELECT 
+concat(substring(sls_due_dt::varchar from 1 for 4 ) , '-', substring(sls_due_dt::varchar from 5 for 2) , '-',substring(sls_due_dt::varchar from 7 for 2))::date 
+from bronze."crm_sales_details"
+
