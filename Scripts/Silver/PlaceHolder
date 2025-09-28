@@ -75,7 +75,17 @@ select * from bronze."erp_cust_az12"
 where gen is null
 
 -- standarisasi column customer id erp supaya sama ke crm --
-select substring(cid from 1 for length(cid)) as cid,bdate,gen from bronze."erp_cust_az12"
+select case when cid like 'NAS%' then substring(cid from 4 for length(cid)) 
+else cid
+end as  cid,
+bdate,
+case 
+when gen in ('F','Female') then 'Female'
+when gen in ('M','Male') then 'Male'
+else 'n/a'
+end as gen
+from bronze."erp_cust_az12"
+
 
 -- ==============================================================
 -- erp_loc_a101
@@ -95,8 +105,22 @@ having count(*) > 1
 
 
 -- standarisasi column customer id erp supaya sama ke crm --
-select concat(substring(cid from 1 for 2) , substring(cid from 4 for length(cid))) as cid,cntry from bronze."erp_loc_a101"
-
+select concat(substring(cid from 1 for 2) , substring(cid from 4 for length(cid))), 
+cntry 
+from (
+select 
+case when 
+cid like 'NAS%' then substring(cid from 1 for length(cid)) 
+else cid 
+end as cid,
+case 
+when trim(cntry) in ('US','United States') then 'United States'
+when trim(cntry) = 'de' then 'Denmark'
+when trim(cntry) = '' or cntry is null then 'n/a'
+else trim(cntry)
+end as cntry
+from bronze."erp_loc_a101"
+)
 
 -- ==============================================================
 -- crm_prd_info
@@ -119,3 +143,11 @@ prd_start_dt,
 prd_end_dt
 from bronze."crm_prd_info"
 
+-- ==============================================================
+-- erp_px_cat_g1v2
+-- ==============================================================
+select id,cat,subcat,maintenance from bronze."erp_px_cat_g1v2"
+
+-- ==============================================================
+-- crm_sales_details
+-- ==============================================================
