@@ -1,28 +1,3 @@
-=========================================================
-CRM_Sales_details
-=======================================================+
-with transform_1 as (
-select sls_ord_num, sls_prd_key, sls_order_dt, sls_cust_id, sls_ship_dt, sls_due_dt, sls_sales, sls_quantity, sls_price, sls_order_dt_transform,
-case 
-when sls_cust_id = '21521' and length(sls_order_dt_transform::varchar) = 1 then lead(sls_order_dt_transform) over() 
-else  sls_order_dt_transform
-end sls_order_dt_transform_1
- from  
- (
-select *,
-case 
-when sls_cust_id in ('11502','12373','13008','18160','21521','22647','26791','28336') and length(sls_order_dt::varchar) = 1 then lead(sls_order_dt) over() 
-when sls_cust_id in ('21995','22819','25988','26791','27674') and length(sls_order_dt::varchar) = 1 then lag(sls_order_dt) over()
-when sls_cust_id = '16864' and length(sls_order_dt::varchar) = 5 then  lag(sls_order_dt) over()
-when sls_cust_id = '16864' and length(sls_order_dt::varchar) = 4 then  lead(sls_order_dt) over()
-when sls_cust_id = '16322' and length(sls_order_dt::varchar) = 1 then sls_ship_dt
-when sls_cust_id = '27039' and length(sls_order_dt::varchar) = 1 then sls_ship_dt
-else sls_order_dt
-end sls_order_dt_transform
-from bronze."crm_sales_details"
-)
-)
-
 -- ==============================================================
 -- crm_cust_info
 -- ==============================================================
@@ -67,3 +42,27 @@ Transform_2 AS (
     FROM Transform_1
 
 
+=========================================================
+CRM_Sales_details
+=======================================================+
+with transform_1 as (
+select sls_ord_num, sls_prd_key, sls_order_dt, sls_cust_id, sls_ship_dt, sls_due_dt, sls_sales, sls_quantity, sls_price, sls_order_dt_transform,
+case 
+when sls_cust_id = '21521' and length(sls_order_dt_transform::varchar) = 1 then lead(sls_order_dt_transform) over() 
+else  sls_order_dt_transform
+end sls_order_dt_transform_1
+ from  
+ (
+select *,
+case 
+when sls_cust_id in ('11502','12373','13008','18160','21521','22647','26791','28336') and length(sls_order_dt::varchar) = 1 then lead(sls_order_dt) over() 
+when sls_cust_id in ('21995','22819','25988','26791','27674') and length(sls_order_dt::varchar) = 1 then lag(sls_order_dt) over()
+when sls_cust_id = '16864' and length(sls_order_dt::varchar) = 5 then  lag(sls_order_dt) over()
+when sls_cust_id = '16864' and length(sls_order_dt::varchar) = 4 then  lead(sls_order_dt) over()
+when sls_cust_id = '16322' and length(sls_order_dt::varchar) = 1 then sls_ship_dt
+when sls_cust_id = '27039' and length(sls_order_dt::varchar) = 1 then sls_ship_dt
+else sls_order_dt
+end sls_order_dt_transform
+from bronze."crm_sales_details"
+)
+)
