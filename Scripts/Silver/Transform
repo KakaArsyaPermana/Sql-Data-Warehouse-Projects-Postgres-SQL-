@@ -22,3 +22,48 @@ end sls_order_dt_transform
 from bronze."crm_sales_details"
 )
 )
+
+-- ==============================================================
+-- crm_cust_info
+-- ==============================================================
+
+
+WITH Transform_1 AS (
+    SELECT 
+        cst_id,
+        cst_key,
+        cst_firstname,
+        cst_lastname,
+        cst_marital_status,
+        cst_gndr,
+        cst_create_date
+    FROM (
+        SELECT 
+            *,
+            RANK() OVER (PARTITION BY cst_id ORDER BY cst_create_date DESC) AS last_insert
+        FROM bronze.crm_cust_info
+    ) sub
+    WHERE last_insert = 1 AND cst_id IS NOT NULL
+),
+
+
+Transform_2 AS (
+    SELECT 
+        cst_id,
+        cst_key,
+        INITCAP(TRIM(cst_firstname)) AS cst_firstname,
+        INITCAP(TRIM(cst_lastname)) AS cst_lastname,
+        CASE 
+            WHEN cst_gndr = 'M' THEN 'Male'
+            WHEN cst_gndr = 'F' THEN 'Female'
+            ELSE 'n/a'
+        END AS cst_gndr,
+        CASE 
+            WHEN cst_marital_status = 'M' THEN 'Married'
+            WHEN cst_marital_status = 'S' THEN 'Single'
+            ELSE 'n/a'
+        END AS cst_marital_status,
+        cst_create_date
+    FROM Transform_1
+
+
