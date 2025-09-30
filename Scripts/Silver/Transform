@@ -3,7 +3,7 @@
 -- ==============================================================
 
 
-WITH Transform_1 AS (
+WITH Transform_1_crm_cust_info AS (
     SELECT 
         cst_id,
         cst_key,
@@ -22,7 +22,7 @@ WITH Transform_1 AS (
 ),
 
 
-Transform_2 AS (
+Transform_2_crm_cust_info AS (
     SELECT 
         cst_id,
         cst_key,
@@ -39,13 +39,32 @@ Transform_2 AS (
             ELSE 'n/a'
         END AS cst_marital_status,
         cst_create_date
-    FROM Transform_1
+    FROM Transform_1_crm_cust_info
+
+
+-- ==============================================================
+-- erp_cust_az12
+-- ==============================================================
+with transform_1_erp_cust_az12 as (
+select case when cid like 'NAS%' then substring(cid from 4 for length(cid)) 
+else cid
+end as  cid,
+bdate,
+case 
+when gen in ('F','Female') then 'Female'
+when gen in ('M','Male') then 'Male'
+else 'n/a'
+end as gen
+from bronze."erp_cust_az12"
+)
+
+select * from transform_1_erp_cust_az12
 
 
 =========================================================
 CRM_Sales_details
 =======================================================+
-with transform_1 as (
+with transform_1_crm_Sales_details as (
 select sls_ord_num, sls_prd_key, sls_order_dt, sls_cust_id, sls_ship_dt, sls_due_dt, sls_sales, sls_quantity, sls_price, sls_order_dt_transform,
 case 
 when sls_cust_id = '21521' and length(sls_order_dt_transform::varchar) = 1 then lead(sls_order_dt_transform) over() 
