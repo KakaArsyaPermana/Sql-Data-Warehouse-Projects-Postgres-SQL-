@@ -147,9 +147,8 @@ sls_cust_id,
 concat(substring(sls_order_dt_transform_1::varchar from 1 for 4), '-' ,substring(sls_order_dt_transform_1::varchar from 5 for 2) ,'-', substring(sls_order_dt_transform_1::varchar from 7 for 2))::date as sls_order_dt,
 concat(substring(sls_ship_dt::varchar from 1 for 4), '-' ,substring(sls_ship_dt::varchar from 5 for 2) ,'-', substring(sls_ship_dt::varchar from 7 for 2))::date as sls_ship_dt,
 concat(substring(sls_due_dt::varchar from 1 for 4), '-' ,substring(sls_due_dt::varchar from 5 for 2) ,'-', substring(sls_due_dt::varchar from 7 for 2))::date as sls_due_dt,
-case when abs(sls_sales) is null then abs(sls_price)  else abs(sls_sales) end as sls_sales, 
+case WHEN sls_sales IS NULL OR sls_sales <= 0 OR sls_sales != sls_quantity * ABS(sls_price) THEN sls_quantity * ABS(sls_price) ELSE sls_sales end as sls_sales, 
 sls_quantity, 
-case when abs(sls_price) is null then abs(sls_sales) else abs(sls_price) end  as sls_price
+case WHEN sls_price IS NULL OR sls_price <= 0 THEN sls_sales / NULLIF(sls_quantity, 0) ELSE sls_price end as sls_price
 from transform_1_crm_Sales_details
 )
-
