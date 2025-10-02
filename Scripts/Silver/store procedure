@@ -1,1 +1,22 @@
 
+create or replace procedure silver.logging_data()
+language plpgsql
+as $$ 
+declare 
+crm_cust_info varchar;
+count_crm_cust_info integer;
+begin 
+	-- crm_cust_info --
+	select tablename from pg_tables where tablename = 'crm_cust_info' and schemaname = 'silver' into crm_cust_info;
+	if crm_cust_info = 'crm_cust_info' then 
+	select count(*) from silver.crm_cust_info into count_crm_cust_info;
+	else
+		raise notice 'Tabel tidak di temukan';
+	end if;
+
+	if count_crm_cust_info > 1 then
+	raise notice 'Tabel ini sudah di isi';
+	else 
+	raise notice 'silahkan masukan data anda';
+	end if;
+END $$;
