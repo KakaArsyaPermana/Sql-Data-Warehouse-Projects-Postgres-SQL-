@@ -1,8 +1,10 @@
-
 CREATE OR REPLACE PROCEDURE silver.load_silver_layer()
 LANGUAGE plpgsql
 AS $$
 DECLARE
+	v_table_name varchar;
+	v_total_column bigint;
+	v_total_row int;
     start_time TIMESTAMP;
     end_time TIMESTAMP;
     duration INTERVAL;
@@ -11,11 +13,13 @@ BEGIN
     -- =============================================================
     -- CRM_CUST_INFO
     -- =============================================================
-    start_time := clock_timestamp();
+    start_time := clock_timestamp(); -- Waktu Mulai -- 
     RAISE NOTICE 'Loading silver.crm_cust_info...';
 
+	-- Hapus tabel jika ada --
     DROP TABLE IF EXISTS silver.crm_cust_info;
 
+	-- Membuat tabel dan masukan table sesuai dengan transformasinya -- 
     CREATE TABLE silver.crm_cust_info AS
     WITH Transform_1_crm_cust_info AS (
         SELECT 
@@ -54,11 +58,38 @@ BEGIN
     )
     SELECT * FROM Transform_2_crm_cust_info;
 
-    end_time := clock_timestamp();
-    duration := end_time - start_time;
+    end_time := clock_timestamp(); -- waktu akhir --
+    duration := end_time - start_time; -- durasi proces --
     RAISE NOTICE 'crm_cust_info loaded in %', duration;
 
+	-- Kumpulkan statistik -- 
+	ANALYZE silver.crm_cust_info;
 
+	-- table_name -- 
+	select distinct tablename from pg_stats where tablename = 'crm_cust_info' into v_table_name;
+
+	-- total_baris --
+	select count(*) from silver.crm_cust_info into v_total_row ;
+
+	--total_column -- 
+	select count(attname) from pg_stats where tablename = 'crm_cust_info' and schemaname = 'silver' into v_total_column;
+	
+	raise notice '%',v_total_column;
+	raise notice 'Table % selesai',v_table_name;
+	raise notice 'Table dimasukan ke dalam silver.etl_log';
+
+	-- masukan hasil log ke dalam table log --
+	insert into silver.etl_log(table_name,total_column,total_row,proces_time,load_date) 
+	values (v_table_name,v_total_column,v_total_row,duration,now());
+
+	-- pengecekan apakah hasil log berhasil di masukan --
+	perform 1 table_name from silver.etl_log where table_name = 'crm_cust_info';
+	if found then 
+		raise notice 'Tabel hasil log berhasil dimasukan';
+	else
+		raise notice 'Tabel hasil log gagal dimasukan ';
+	end if;
+	
     -- =============================================================
     -- ERP_CUST_AZ12
     -- =============================================================
@@ -232,4 +263,8 @@ BEGIN
 END;
 $$;
 
+
 call silver.load_silver_layer()
+
+
+select * from silver.etl_log
