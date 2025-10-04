@@ -1,22 +1,282 @@
+CREATE OR REPLACE PROCEDURE silver.load_silver_layer()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_table_name varchar;
+    v_total_column bigint;
+    v_total_row int;
+    start_time TIMESTAMP;
+    end_time TIMESTAMP;
+    duration INTERVAL;
+BEGIN
 
-create or replace procedure silver.logging_data()
-language plpgsql
-as $$ 
-declare 
-crm_cust_info varchar;
-count_crm_cust_info integer;
-begin 
-	-- crm_cust_info --
-	select tablename from pg_tables where tablename = 'crm_cust_info' and schemaname = 'silver' into crm_cust_info;
-	if crm_cust_info = 'crm_cust_info' then 
-	select count(*) from silver.crm_cust_info into count_crm_cust_info;
-	else
-		raise notice 'Tabel tidak di temukan';
-	end if;
+    -- =============================================================
+    -- CRM_CUST_INFO
+    -- =============================================================
+    start_time := clock_timestamp();
+    RAISE NOTICE 'Loading silver.crm_cust_info...';
 
-	if count_crm_cust_info > 1 then
-	raise notice 'Tabel ini sudah di isi';
-	else 
-	raise notice 'silahkan masukan data anda';
-	end if;
-END $$;
+    DROP TABLE IF EXISTS silver.crm_cust_info;
+
+    CREATE TABLE silver.crm_cust_info AS
+    WITH Transform_1 AS (
+        SELECT 
+            cst_id, cst_key, cst_firstname, cst_lastname, 
+            cst_marital_status, cst_gndr, cst_create_date
+        FROM (
+            SELECT *,
+                   RANK() OVER (PARTITION BY cst_id ORDER BY cst_create_date DESC) AS last_insert
+            FROM bronze.crm_cust_info
+        ) sub
+        WHERE last_insert = 1 AND cst_id IS NOT NULL
+    ),
+    Transform_2 AS (
+        SELECT 
+            cst_id,
+            cst_key,
+            INITCAP(TRIM(cst_firstname)) AS cst_firstname,
+            INITCAP(TRIM(cst_lastname)) AS cst_lastname,
+            CASE 
+                WHEN cst_gndr = 'M' THEN 'Male'
+                WHEN cst_gndr = 'F' THEN 'Female'
+                ELSE 'n/a'
+            END AS cst_gndr,
+            CASE 
+                WHEN cst_marital_status = 'M' THEN 'Married'
+                WHEN cst_marital_status = 'S' THEN 'Single'
+                ELSE 'n/a'
+            END AS cst_marital_status,
+            cst_create_date
+        FROM Transform_1
+    )
+    SELECT * FROM Transform_2;
+
+    end_time := clock_timestamp();
+    duration := end_time - start_time;
+    RAISE NOTICE 'crm_cust_info loaded in %', duration;
+
+    ANALYZE silver.crm_cust_info;
+
+    SELECT DISTINCT tablename 
+    INTO v_table_name 
+    FROM pg_stats WHERE tablename = 'crm_cust_info';
+
+    SELECT COUNT(*) INTO v_total_row FROM silver.crm_cust_info;
+
+    SELECT COUNT(attname) 
+    INTO v_total_column 
+    FROM pg_stats 
+    WHERE tablename = 'crm_cust_info' AND schemaname = 'silver';
+
+    INSERT INTO silver.etl_log(table_name, total_column, total_row, proces_time, load_date)
+    VALUES (v_table_name, v_total_column, v_total_row, duration, now());
+
+    IF FOUND THEN
+        RAISE NOTICE 'crm_cust_info log inserted.';
+    END IF;
+
+    -- =============================================================
+    -- ERP_CUST_AZ12
+    -- =============================================================
+    start_time := clock_timestamp();
+    RAISE NOTICE 'Loading silver.erp_cust_az12...';
+
+    DROP TABLE IF EXISTS silver.erp_cust_az12;
+
+    CREATE TABLE silver.erp_cust_az12 AS
+    WITH Transform_1 AS (
+        SELECT 
+            CASE WHEN cid LIKE 'NAS%' THEN SUBSTRING(cid FROM 4) ELSE cid END AS cid,
+            bdate,
+            CASE 
+                WHEN gen IN ('F','Female') THEN 'Female'
+                WHEN gen IN ('M','Male') THEN 'Male'
+                ELSE 'n/a'
+            END AS gen
+        FROM bronze.erp_cust_az12
+    )
+    SELECT * FROM Transform_1;
+
+    end_time := clock_timestamp();
+    duration := end_time - start_time;
+    RAISE NOTICE 'erp_cust_az12 loaded in %', duration;
+
+    ANALYZE silver.erp_cust_az12;
+    SELECT DISTINCT tablename INTO v_table_name FROM pg_stats WHERE tablename = 'erp_cust_az12';
+    SELECT COUNT(*) INTO v_total_row FROM silver.erp_cust_az12;
+    SELECT COUNT(attname) INTO v_total_column FROM pg_stats WHERE tablename = 'erp_cust_az12' AND schemaname = 'silver';
+    INSERT INTO silver.etl_log VALUES (v_table_name, v_total_column, v_total_row, duration, now());
+
+    -- =============================================================
+    -- ERP_LOC_A101
+    -- =============================================================
+    start_time := clock_timestamp();
+    RAISE NOTICE 'Loading silver.erp_loc_a101...';
+
+    DROP TABLE IF EXISTS silver.erp_loc_a101;
+
+    CREATE TABLE silver.erp_loc_a101 AS
+    WITH Transform_1 AS (
+        SELECT CONCAT(SUBSTRING(cid FROM 1 FOR 2), SUBSTRING(cid FROM 4)) AS cid,
+               cntry
+        FROM (
+            SELECT CASE WHEN cid LIKE 'NAS%' THEN SUBSTRING(cid FROM 1) ELSE cid END AS cid,
+                   CASE 
+                        WHEN TRIM(cntry) IN ('US','USA') THEN 'United States'
+                        WHEN TRIM(cntry) = 'de' THEN 'Denmark'
+                        WHEN TRIM(cntry) = '' OR cntry IS NULL THEN 'n/a'
+                        ELSE TRIM(cntry)
+                   END AS cntry
+            FROM bronze.erp_loc_a101
+        ) sub
+    )
+    SELECT * FROM Transform_1;
+
+    end_time := clock_timestamp();
+    duration := end_time - start_time;
+    RAISE NOTICE 'erp_loc_a101 loaded in %', duration;
+
+    ANALYZE silver.erp_loc_a101;
+    SELECT DISTINCT tablename INTO v_table_name FROM pg_stats WHERE tablename = 'erp_loc_a101';
+    SELECT COUNT(*) INTO v_total_row FROM silver.erp_loc_a101;
+    SELECT COUNT(attname) INTO v_total_column FROM pg_stats WHERE tablename = 'erp_loc_a101' AND schemaname = 'silver';
+    INSERT INTO silver.etl_log VALUES (v_table_name, v_total_column, v_total_row, duration, now());
+
+    -- =============================================================
+    -- CRM_PRD_INFO
+    -- =============================================================
+    start_time := clock_timestamp();
+    RAISE NOTICE 'Loading silver.crm_prd_info...';
+
+    DROP TABLE IF EXISTS silver.crm_prd_info;
+
+    CREATE TABLE silver.crm_prd_info AS
+    WITH Transform_1 AS (
+        SELECT SUBSTRING(prd_key FROM 7) AS sls_prd_key,
+               prd_id,
+               prd_key,
+               prd_nm,
+               REPLACE(SUBSTRING(prd_key FROM 1 FOR 5),'-','_') AS prd_cat_key,
+               COALESCE(prd_cost,0) AS prd_cost,
+               CASE 
+                    WHEN LOWER(TRIM(prd_line)) = 'r' THEN 'Road'
+                    WHEN LOWER(TRIM(prd_line)) = 'm' THEN 'Mountain'
+                    WHEN LOWER(TRIM(prd_line)) = 't' THEN 'Touring'
+                    WHEN LOWER(TRIM(prd_line)) = 's' THEN 'Other Sales'
+                    ELSE 'n/a'
+               END AS prd_line,
+               prd_start_dt,
+               (LEAD(prd_start_dt) OVER(PARTITION BY prd_key ORDER BY prd_id) - 1) AS prd_end_dt
+        FROM bronze.crm_prd_info
+    )
+    SELECT * FROM Transform_1;
+
+    end_time := clock_timestamp();
+    duration := end_time - start_time;
+    RAISE NOTICE 'crm_prd_info loaded in %', duration;
+
+    ANALYZE silver.crm_prd_info;
+    SELECT DISTINCT tablename INTO v_table_name FROM pg_stats WHERE tablename = 'crm_prd_info';
+    SELECT COUNT(*) INTO v_total_row FROM silver.crm_prd_info;
+    SELECT COUNT(attname) INTO v_total_column FROM pg_stats WHERE tablename = 'crm_prd_info' AND schemaname = 'silver';
+    INSERT INTO silver.etl_log VALUES (v_table_name, v_total_column, v_total_row, duration, now());
+
+    -- =============================================================
+    -- ERP_PX_CAT_G1V2
+    -- =============================================================
+    start_time := clock_timestamp();
+    RAISE NOTICE 'Loading silver.erp_px_cat_g1v2...';
+
+    DROP TABLE IF EXISTS silver.erp_px_cat_g1v2;
+
+    CREATE TABLE silver.erp_px_cat_g1v2 AS
+    SELECT id, cat, subcat, maintenance
+    FROM bronze.erp_px_cat_g1v2;
+
+    end_time := clock_timestamp();
+    duration := end_time - start_time;
+    RAISE NOTICE 'erp_px_cat_g1v2 loaded in %', duration;
+
+    ANALYZE silver.erp_px_cat_g1v2;
+    SELECT DISTINCT tablename INTO v_table_name FROM pg_stats WHERE tablename = 'erp_px_cat_g1v2';
+    SELECT COUNT(*) INTO v_total_row FROM silver.erp_px_cat_g1v2;
+    SELECT COUNT(attname) INTO v_total_column FROM pg_stats WHERE tablename = 'erp_px_cat_g1v2' AND schemaname = 'silver';
+    INSERT INTO silver.etl_log VALUES (v_table_name, v_total_column, v_total_row, duration, now());
+
+    -- =============================================================
+    -- CRM_SALES_DETAILS
+    -- =============================================================
+    start_time := clock_timestamp();
+    RAISE NOTICE 'Loading silver.crm_sales_details...';
+
+    DROP TABLE IF EXISTS silver.crm_sales_details;
+
+    CREATE TABLE silver.crm_sales_details AS
+    WITH transform_1 AS (
+        SELECT sls_ord_num, sls_prd_key, sls_order_dt, sls_cust_id::VARCHAR,
+               sls_ship_dt, sls_due_dt, sls_sales, sls_quantity, sls_price,
+               sls_order_dt_transform,
+               CASE 
+                    WHEN sls_cust_id = '21521' AND LENGTH(sls_order_dt_transform::VARCHAR) = 1 
+                         THEN LEAD(sls_order_dt_transform) OVER() 
+                    ELSE sls_order_dt_transform
+               END AS sls_order_dt_transform_1
+        FROM (
+            SELECT *,
+                   CASE 
+                        WHEN sls_cust_id IN ('11502','12373','13008','18160','21521','22647','26791','28336') 
+                             AND LENGTH(sls_order_dt::VARCHAR) = 1 THEN LEAD(sls_order_dt) OVER() 
+                        WHEN sls_cust_id IN ('21995','22819','25988','26791','27674') 
+                             AND LENGTH(sls_order_dt::VARCHAR) = 1 THEN LAG(sls_order_dt) OVER()
+                        WHEN sls_cust_id = '16864' AND LENGTH(sls_order_dt::VARCHAR) = 5 THEN LAG(sls_order_dt) OVER()
+                        WHEN sls_cust_id = '16864' AND LENGTH(sls_order_dt::VARCHAR) = 4 THEN LEAD(sls_order_dt) OVER()
+                        WHEN sls_cust_id IN ('16322','27039') AND LENGTH(sls_order_dt::VARCHAR) = 1 THEN sls_ship_dt
+                        ELSE sls_order_dt
+                   END AS sls_order_dt_transform
+            FROM bronze.crm_sales_details
+        ) sub
+    ),
+    transform_2 AS (
+        SELECT sls_ord_num, sls_prd_key, sls_cust_id,
+               TO_DATE(SUBSTRING(sls_order_dt_transform_1::VARCHAR,1,8),'YYYYMMDD') AS sls_order_dt,
+               TO_DATE(SUBSTRING(sls_ship_dt::VARCHAR,1,8),'YYYYMMDD') AS sls_ship_dt,
+               TO_DATE(SUBSTRING(sls_due_dt::VARCHAR,1,8),'YYYYMMDD') AS sls_due_dt,
+               CASE 
+                    WHEN sls_sales IS NULL OR sls_sales <= 0 
+                         OR sls_sales != sls_quantity * ABS(sls_price) 
+                    THEN sls_quantity * ABS(sls_price) 
+                    ELSE sls_sales 
+               END AS sls_sales,
+               sls_quantity,
+               CASE 
+                    WHEN sls_price IS NULL OR sls_price <= 0 
+                    THEN sls_sales / NULLIF(sls_quantity,0) 
+                    ELSE sls_price 
+               END AS sls_price
+        FROM transform_1
+    )
+    SELECT * FROM transform_2;
+
+    end_time := clock_timestamp();
+    duration := end_time - start_time;
+    RAISE NOTICE 'crm_sales_details loaded in %', duration;
+
+    ANALYZE silver.crm_sales_details;
+    SELECT DISTINCT tablename INTO v_table_name FROM pg_stats WHERE tablename = 'crm_sales_details';
+    SELECT COUNT(*) INTO v_total_row FROM silver.crm_sales_details;
+    SELECT COUNT(attname) INTO v_total_column FROM pg_stats WHERE tablename = 'crm_sales_details' AND schemaname = 'silver';
+    INSERT INTO silver.etl_log VALUES (v_table_name, v_total_column, v_total_row, duration, now());
+
+    -- =============================================================
+    -- DONE
+    -- =============================================================
+    RAISE NOTICE 'All silver layer tables loaded successfully.';
+
+END;
+$$;
+
+
+call silver.load_silver_layer()
+
+
+select * from silver.etl_log;
