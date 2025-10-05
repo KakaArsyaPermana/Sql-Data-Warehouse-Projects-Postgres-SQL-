@@ -1,1 +1,31 @@
+-- dim_customer--
+select 
+ci.cst_id,
+ci.cst_key,
+ci.cst_firstname,
+ci.cst_lastname,
+ci.cst_gndr,
+ec.bdate,
+el.cntry,
+ci.cst_marital_status,
+ci.cst_create_date
+from silver."crm_cust_info" ci left join silver."erp_cust_az12" ec on ci.cst_key = ec.cid
+left join silver."erp_loc_a101" el on ci.cst_key = el.cid
 
+-- dim_product--
+select 
+pd.sls_prd_key,
+pd.prd_id prd_key,
+pd.prd_cat_key,
+pd.prd_nm,
+epc.cat,
+epc.subcat,
+epc.maintenance,
+pd.prd_cost,
+pd.prd_line,
+pd.prd_start_dt,
+pd.prd_end_dt
+from silver."crm_prd_info" pd left join silver."erp_px_cat_g1v2" epc on pd.prd_cat_key = epc.id
+
+-- Fact_sales_details--
+select * from silver."crm_sales_details"
