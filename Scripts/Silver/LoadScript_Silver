@@ -1,3 +1,19 @@
+/* ===============================================================
+   DDL Script : Load Script 
+   =============================================================== 
+   Tujuan Script :
+      Skrip Ini bertujuan untuk membuat store_procedure yang digunakan
+	untuk me masukan masing masing  tabel yang sudah dilakukan 
+	transformasi dari bronze layer ke dalam silver layer dan juga
+	memasukan mencatatnya ke dalam silver.etl_log
+   =============================================================== */
+    Noted :
+     	Sebelum membuat store procedure dan transform lakukan lah 
+	data understanding dan pengcekan dalam nilai null dan duplikat
+   =============================================================== */
+
+
+
 CREATE OR REPLACE PROCEDURE silver.load_silver_layer()
 LANGUAGE plpgsql
 AS $$
