@@ -1,4 +1,11 @@
-# 1. Fact_sales
+# 📘 Data Catalog – Data Warehouse
+
+Dokumentasi struktur tabel dan deskripsi kolom pada skema **Data Warehouse**.
+Setiap tabel memiliki *surrogate key* sebagai Primary Key (PK).
+
+---
+
+# 1. Fact_Sales
 
 | Nama Kolom        | Tipe Data     | Keterangan                                                 |
 | ----------------- | ------------- | ---------------------------------------------------------- |
@@ -11,6 +18,8 @@
 | **sales_amount**  | `INTEGER`     | Nilai total penjualan                                      |
 | **quantity**      | `INTEGER`     | Jumlah barang yang dijual                                  |
 | **price**         | `INTEGER`     | Harga per unit produk                                      |
+
+---
 
 # 2. Dim_Customer
 
@@ -27,18 +36,38 @@
 | **marital_status**  | `TEXT`        | Status pernikahan pelanggan                |
 | **create_date**     | `DATE`        | Tanggal pembuatan data pelanggan di sumber |
 
+---
 
 # 3. Dim_Products
 
-| Nama Kolom          | Tipe Data     | Keterangan                                 |
-| ------------------- | ------------- | ------------------------------------------ |
-| **customer_key**    | `INTEGER`     | **PK** – Surrogate key pelanggan di DWH    |
-| **customer_id**     | `INTEGER`     | Natural key dari sistem sumber             |
-| **customer_number** | `VARCHAR(50)` | Nomor pelanggan (ID eksternal)             |
-| **first_name**      | `TEXT`        | Nama depan pelanggan                       |
-| **last_name**       | `TEXT`        | Nama belakang pelanggan                    |
-| **gender**          | `TEXT`        | Jenis kelamin pelanggan                    |
-| **country**         | `TEXT`        | Negara tempat tinggal pelanggan            |
-| **birth_date**      | `DATE`        | Tanggal lahir pelanggan                    |
-| **marital_status**  | `TEXT`        | Status pernikahan pelanggan                |
-| **create_date**     | `DATE`        | Tanggal pembuatan data pelanggan di sumber |
+| Nama Kolom        | Tipe Data     | Keterangan                              |
+| ----------------- | ------------- | --------------------------------------- |
+| **product_key**   | `INTEGER`     | **PK** – Surrogate key produk di DWH    |
+| **product_id**    | `TEXT`        | Natural key dari sistem sumber          |
+| **product_number**| `INTEGER`     | Nomor unik produk                       |
+| **product_name**  | `VARCHAR(50)` | Nama produk                             |
+| **category_id**   | `TEXT`        | ID kategori dari sistem sumber          |
+| **category**      | `VARCHAR(50)` | Nama kategori produk                    |
+| **sub_category**  | `VARCHAR(50)` | Subkategori produk                      |
+| **maintenance**   | `VARCHAR(50)` | Status perawatan/layanan produk         |
+| **cost**          | `INTEGER`     | Biaya produksi produk                   |
+| **product_line**  | `TEXT`        | Lini atau grup produk                   |
+| **start_date**    | `DATE`        | Tanggal produk mulai dijual atau aktif  |
+
+---
+
+## 🔗 Relasi Antar Tabel
+
+```
+Fact_Sales
+ ├── product_key → Dim_Products.product_key
+ └── customer_key → Dim_Customer.customer_key
+```
+
+---
+
+## 📄 Catatan
+
+- Semua **primary key (PK)** menggunakan **surrogate key (integer, auto-increment)** yang dibuat di DWH.
+- Tabel **Fact_Sales** berperan sebagai **fact table**, sementara **Dim_Customer** dan **Dim_Products** adalah **dimension tables**.
+- Skema ini menggunakan model **Star Schema**.
