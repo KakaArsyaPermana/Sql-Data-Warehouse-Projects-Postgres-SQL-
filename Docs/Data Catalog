@@ -1,0 +1,44 @@
+# 1. Fact_sales
+
+| Nama Kolom        | Tipe Data     | Keterangan                                                 |
+| ----------------- | ------------- | ---------------------------------------------------------- |
+| **order_number**  | `VARCHAR(50)` | Nomor unik transaksi penjualan                             |
+| **product_key**   | `INTEGER`     | FK → `Dim_Products.product_key` (surrogate key produk)     |
+| **customer_key**  | `INTEGER`     | FK → `Dim_Customer.customer_key` (surrogate key pelanggan) |
+| **order_date**    | `DATE`        | Tanggal pemesanan dilakukan                                |
+| **shipping_date** | `DATE`        | Tanggal pengiriman barang                                  |
+| **due_dt**        | `DATE`        | Tanggal jatuh tempo pembayaran                             |
+| **sales_amount**  | `INTEGER`     | Nilai total penjualan                                      |
+| **quantity**      | `INTEGER`     | Jumlah barang yang dijual                                  |
+| **price**         | `INTEGER`     | Harga per unit produk                                      |
+
+# 2. Dim_Customer
+
+| Nama Kolom          | Tipe Data     | Keterangan                                 |
+| ------------------- | ------------- | ------------------------------------------ |
+| **customer_key**    | `INTEGER`     | **PK** – Surrogate key pelanggan di DWH    |
+| **customer_id**     | `INTEGER`     | Natural key dari sistem sumber             |
+| **customer_number** | `VARCHAR(50)` | Nomor pelanggan (ID eksternal)             |
+| **first_name**      | `TEXT`        | Nama depan pelanggan                       |
+| **last_name**       | `TEXT`        | Nama belakang pelanggan                    |
+| **gender**          | `TEXT`        | Jenis kelamin pelanggan                    |
+| **country**         | `TEXT`        | Negara tempat tinggal pelanggan            |
+| **birth_date**      | `DATE`        | Tanggal lahir pelanggan                    |
+| **marital_status**  | `TEXT`        | Status pernikahan pelanggan                |
+| **create_date**     | `DATE`        | Tanggal pembuatan data pelanggan di sumber |
+
+
+# 3. Dim_Products
+
+| Nama Kolom          | Tipe Data     | Keterangan                                 |
+| ------------------- | ------------- | ------------------------------------------ |
+| **customer_key**    | `INTEGER`     | **PK** – Surrogate key pelanggan di DWH    |
+| **customer_id**     | `INTEGER`     | Natural key dari sistem sumber             |
+| **customer_number** | `VARCHAR(50)` | Nomor pelanggan (ID eksternal)             |
+| **first_name**      | `TEXT`        | Nama depan pelanggan                       |
+| **last_name**       | `TEXT`        | Nama belakang pelanggan                    |
+| **gender**          | `TEXT`        | Jenis kelamin pelanggan                    |
+| **country**         | `TEXT`        | Negara tempat tinggal pelanggan            |
+| **birth_date**      | `DATE`        | Tanggal lahir pelanggan                    |
+| **marital_status**  | `TEXT`        | Status pernikahan pelanggan                |
+| **create_date**     | `DATE`        | Tanggal pembuatan data pelanggan di sumber |
