@@ -119,3 +119,34 @@ Lapisan akhir tempat pengguna berinteraksi dengan data hasil olahan.
 
 **🎯 Tujuan:**
 Mendukung proses pengambilan keputusan berbasis data dan pengembangan analitik lanjut.
+
+
+
+# 📦 Persyaratan Proyek  
+**Pembangunan Data Warehouse (Data Engineering)**
+
+## 🎯 Tujuan  
+Mengembangkan data warehouse modern menggunakan PostgreSQL untuk mengonsolidasi data penjualan, sehingga mendukung pelaporan analitik dan pengambilan keputusan yang lebih baik.
+
+---
+
+## 📋 Spesifikasi
+
+### 🔹 Sumber Data  
+- Mengimpor data dari dua sistem sumber utama:  
+  - **ERP** (Enterprise Resource Planning)  
+  - **CRM** (Customer Relationship Management)  
+- Format data: **CSV files**
+
+### 🔹 Kualitas Data  
+- Melakukan pembersihan dan perbaikan terhadap isu kualitas data sebelum dianalisis.
+
+### 🔹 Integrasi  
+- Menggabungkan kedua sumber data ke dalam satu model data yang ramah pengguna dan dirancang untuk query analitik.
+
+### 🔹 Cakupan  
+- Fokus hanya pada dataset terbaru.  
+- Historisasi data **tidak diperlukan**.
+
+### 🔹 Dokumentasi  
+- Menyediakan dokumentasi yang jelas mengenai model data untuk mendukung kebutuhan pemangku kepentingan bisnis dan tim analitik.
