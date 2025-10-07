@@ -1,1 +1,14 @@
-
+select 
+fs.order_number,
+dc.first_name,
+dc.gender,
+dc.country,
+abs(extract(year from age(dc.birth_date,now()))) as age,
+dc.marital_status,
+dp.product_name,
+dp.category,
+dp.sub_category,
+dp.product_line
+FROM gold.fact_sales fs
+JOIN gold.dim_customer dc ON fs.customer_key = dc.customer_key
+JOIN gold.dim_products dp ON fs.product_key = dp.product_key;
