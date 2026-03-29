@@ -14,7 +14,7 @@ Pendekatan ini membuat alur data menjadi lebih terstruktur, mudah dikelola, dan 
 
 
  
-# 📁 1. Source
+# 1. Source
 
 **Sumber data** berasal dari beberapa sistem operasional utama:
 
@@ -22,57 +22,57 @@ Pendekatan ini membuat alur data menjadi lebih terstruktur, mudah dikelola, dan 
 - **ERP** (Enterprise Resource Planning)
 - **Flat Files** (CSV) — disimpan sementara di local storage sebelum dimuat ke sistem data warehouse.
 
-**🎯 Tujuan:**
+** Tujuan:**
 Mengumpulkan data mentah dari berbagai sumber sebelum proses transformasi.
 
 ---
 
-# 🥉 2. Extract Layer (Bronze Layer)
+# 2. Extract Layer (Bronze Layer)
 
 - **Nama Layer:** Raw Data  
 - **Object Type:** Tables
 
-## 🔹 Proses Load
+## Proses Load
 - **Batch Processing** — pemrosesan data dalam batch terjadwal.
 - **Full Load** — pemuatan seluruh dataset.
 - **Truncate & Insert** — menghapus data lama dan menggantinya dengan data baru.
 
-**🎯 Tujuan:**
+** Tujuan:**
 Menyimpan data mentah (raw) tanpa transformasi untuk keperluan audit, historis, dan validasi sumber.
 
 ---
 
-# 🥈 3. Transform Layer (Silver Layer)
+#  3. Transform Layer (Silver Layer)
 
 - **Nama Layer:** Transform Data  
 - **Object Type:** Tables
 
-## 🔹 Proses Load
+##  Proses Load
 - Batch Processing  
 - Full Load  
 - Truncate & Insert
 
-## 🔹 Proses Transformasi
+##  Proses Transformasi
 - **Data Cleansing:** menghapus duplikasi dan memperbaiki data invalid.
 - **Data Standardization:** menyeragamkan format data (contoh: tanggal, kode negara, dll).
 - **Data Normalization:** membentuk struktur relasional antar tabel.
 - **Derived Columns:** menambah kolom hasil perhitungan.
 - **Data Enrichment:** memperkaya data dengan informasi tambahan dari sumber lain.
 
-**🎯 Tujuan:**
+**Tujuan:**
 Menghasilkan data yang sudah bersih, konsisten, dan siap untuk dimodelkan ke tahap berikutnya.
 
 ---
 
-# 🥇 4. Data Modeling Layer (Gold Layer)
+#  4. Data Modeling Layer (Gold Layer)
 
 - **Nama Layer:** Business Ready Data  
 - **Object Type:** Tables / Materialized Views
 
-## 🔹 Proses Load
+##  Proses Load
 Menggunakan **Materialized View** untuk meningkatkan performa query dan mengurangi beban komputasi berulang.
 
-## 🔹 Transformasi & Model
+##  Transformasi & Model
 - **Data Integration:** menggabungkan data dari berbagai sumber (CRM, ERP, CSV).
 - **Aggregation:** menghitung metrik dan indikator bisnis (mis. total penjualan, jumlah pelanggan).
 - **Business Logic:** menerapkan aturan bisnis sesuai kebutuhan organisasi.
@@ -80,73 +80,73 @@ Menggunakan **Materialized View** untuk meningkatkan performa query dan menguran
 - **Data Mart Creation:** membuat data mart tematik (penjualan, pelanggan, produk).
 - **Function for End User:** menyediakan fungsi SQL siap pakai untuk pengguna.
 
-## 🧩 Model Data
+##  Model Data
 - Star Schema  
 - Flat Table  
 - Aggregate Table
 
-**🎯 Tujuan:**
+** Tujuan:**
 Menyediakan data yang telah terintegrasi dan siap digunakan untuk analisis bisnis atau pelaporan strategis.
 
 ---
 
-# 💎 5. Data Mart & Security Layer (Platinum Layer)
+#  5. Data Mart & Security Layer (Platinum Layer)
 
 - **Nama Layer:** Data Mart & Function  
-- **Object Type:** Views
+- **Object Type:** M Views
 
-## 🔹 Proses Load
+##  Proses Load
 Tidak memerlukan proses load langsung karena berbasis view.
 
-## 🔹 Transformasi & Fungsi
+##  Transformasi & Fungsi
 - **Role-Based Access:** manajemen hak akses pengguna terhadap data.
 - **Security Layer:** memastikan kontrol keamanan antar pengguna dan modul.
 - **Analytic Views:** menyediakan view atau materialized view khusus untuk analisis.
 
-**🎯 Tujuan:**
+** Tujuan:**
 Memberikan data siap analisis dengan keamanan tinggi dan kontrol akses yang fleksibel untuk setiap user.
 
 ---
 
-# 📊 6. Consume Layer
+# 6. Consume Layer
 
 Lapisan akhir tempat pengguna berinteraksi dengan data hasil olahan.
 
-## 🔹 Metode Konsumsi
+##  Metode Konsumsi
 - **Visualization:** integrasi dengan BI tools (Power BI, Tableau, Metabase, dsb).
 - **Ad-hoc SQL Queries:** eksplorasi data langsung oleh data analyst / scientist.
 - **Machine Learning:** dataset siap pakai untuk model AI/ML.
 
-**🎯 Tujuan:**
+** Tujuan:**
 Mendukung proses pengambilan keputusan berbasis data dan pengembangan analitik lanjut.
 
 
 
-# 📦 Persyaratan Proyek  
+#  Persyaratan Proyek  
 **Pembangunan Data Warehouse (Data Engineering)**
 
-## 🎯 Tujuan  
+##  Tujuan  
 Mengembangkan data warehouse modern menggunakan PostgreSQL untuk mengonsolidasi data penjualan, sehingga mendukung pelaporan analitik dan pengambilan keputusan yang lebih baik.
 
 ---
 
-## 📋 Spesifikasi
+## 📋Spesifikasi
 
-### 🔹 Sumber Data  
+###  Sumber Data  
 - Mengimpor data dari dua sistem sumber utama:  
   - **ERP** (Enterprise Resource Planning)  
   - **CRM** (Customer Relationship Management)  
 - Format data: **CSV files**
 
-### 🔹 Kualitas Data  
+###  Kualitas Data  
 - Melakukan pembersihan dan perbaikan terhadap isu kualitas data sebelum dianalisis.
 
-### 🔹 Integrasi  
+###  Integrasi  
 - Menggabungkan kedua sumber data ke dalam satu model data yang ramah pengguna dan dirancang untuk query analitik.
 
-### 🔹 Cakupan  
+###  Cakupan  
 - Fokus hanya pada dataset terbaru.  
 - Historisasi data **tidak diperlukan**.
 
-### 🔹 Dokumentasi  
+###  Dokumentasi  
 - Menyediakan dokumentasi yang jelas mengenai model data untuk mendukung kebutuhan pemangku kepentingan bisnis dan tim analitik.
