@@ -1,9 +1,10 @@
-# 📘 Data Catalog – Data Warehouse
+#  Data Catalog – Data Warehouse
 
 Dokumentasi struktur tabel dan deskripsi kolom pada skema **Data Warehouse**.
 Setiap tabel memiliki *surrogate key* sebagai Primary Key (PK).
 
 ---
+
 
 # 1. Fact_Sales
 
@@ -56,7 +57,7 @@ Setiap tabel memiliki *surrogate key* sebagai Primary Key (PK).
 
 ---
 
-## 🔗 Relasi Antar Tabel
+##  Relasi Antar Tabel
 
 ```
 Fact_Sales
@@ -66,7 +67,7 @@ Fact_Sales
 
 ---
 
-## 📄 Catatan
+##  Catatan
 
 - Semua **primary key (PK)** menggunakan **surrogate key (integer, auto-increment)** yang dibuat di DWH.
 - Tabel **Fact_Sales** berperan sebagai **fact table**, sementara **Dim_Customer** dan **Dim_Products** adalah **dimension tables**.
