@@ -68,7 +68,5 @@ Fact_Sales
 ---
 
 ##  Catatan
-
-- Semua **primary key (PK)** menggunakan **surrogate key (integer, auto-increment)** yang dibuat di DWH.
 - Tabel **Fact_Sales** berperan sebagai **fact table**, sementara **Dim_Customer** dan **Dim_Products** adalah **dimension tables**.
 - Skema ini menggunakan model **Star Schema**.
