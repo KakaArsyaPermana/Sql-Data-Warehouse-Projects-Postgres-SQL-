@@ -130,7 +130,7 @@ Mengembangkan data warehouse modern menggunakan PostgreSQL untuk mengonsolidasi 
 
 ---
 
-## 📋Spesifikasi
+## Spesifikasi
 
 ###  Sumber Data  
 - Mengimpor data dari dua sistem sumber utama:  
