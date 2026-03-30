@@ -7,7 +7,7 @@ Repositori ini berisi implementasi Data Warehouse dari awal (from scratch) berba
                            Indexing , Partising 
   3. Data Security → manajemen role, akses user, dan pembuatan data mart berbasis views.
 
-# 🏗️ Data Warehouse Design Architecture – PostgreSQL
+#  Data Warehouse Design Architecture – PostgreSQL
 Arsitektur data dalam proyek ini terinspirasi dari konsep Medallion Architecture (Bronze, Silver, Gold) dengan tambahan Platinum Layer yang disesuaikan dengan kebutuhan keamanan dan akses pengguna.
 Pendekatan ini membuat alur data menjadi lebih terstruktur, mudah dikelola, dan siap digunakan untuk analisis bisnis maupun machine learning.Diagram di bawah menggambarkan arsitektur Data Warehouse berbasis PostgreSQL yang memisahkan tahapan Extract, Transform, Modeling, dan Consume secara jelas.
 <img width="1763" height="817" alt="image" src="https://github.com/user-attachments/assets/17fec0f0-4980-4153-86b1-bf30de8823f7" />
